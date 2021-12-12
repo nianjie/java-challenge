@@ -14,10 +14,6 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    public void setEmployeeService(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
-
     @GetMapping("/employees")
     public List<Employee> getEmployees() {
         List<Employee> employees = employeeService.retrieveEmployees();
