@@ -2,6 +2,7 @@ package jp.co.axa.apidemo.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+@ToString
 @Entity
 @Table(name="EMPLOYEE")
 public class Employee {
@@ -34,5 +36,14 @@ public class Employee {
     @Setter
     @Column(name="DEPARTMENT")
     private String department;
+
+    public Employee() {
+    }
+
+    public Employee(String name, int salary, String department) {
+        this.name = name;
+        this.salary = salary;
+        this.department = department;
+    }
 
 }
