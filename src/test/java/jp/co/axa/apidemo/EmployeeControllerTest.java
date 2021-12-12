@@ -7,14 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,14 +55,13 @@ public class EmployeeControllerTest {
 
     @Test
     public void testGetEmployee() throws Exception {
-        Employee[] employees = {
-                new Employee("Foo", 1, "it"),
-                new Employee("Bar", 2, "it"),
-        };
-        when(employeeRepository.findById(1l)).thenReturn(Optional.of(employees[1]));
+        Employee foo = new Employee("Foo", 1, "it");
+        foo.setId(888l);
+        when(employeeRepository.findById(1l)).thenReturn(Optional.of(foo));
         this.mockMvc.perform(get("/api/v1/employees/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(employees[1].getName()))
+                .andExpect(jsonPath("$.name").value(foo.getName()))
+                .andExpect(jsonPath("$.id").value(foo.getId()))
                 ;
     }
 
@@ -68,6 +70,19 @@ public class EmployeeControllerTest {
         when(employeeRepository.findById(1l)).thenReturn(Optional.empty());
         this.mockMvc.perform(get("/api/v1/employees/1"))
                 .andExpect(status().isNotFound())
+                ;
+    }
+
+    @Test
+    public void testSaveEmployee() throws Exception {
+        Employee foo = new Employee("Foo", 1, "it");
+        foo.setId(888l);
+        when(employeeRepository.save(any(Employee.class))).thenReturn(foo);
+        this.mockMvc.perform(post("/api/v1/employees")
+                        .content("{\"name\": \"Foo\", \"salary\":1, \"department\":\"it\"}")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(foo.getId()))
                 ;
     }
 }
