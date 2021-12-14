@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
 
 @ToString
 @Entity
@@ -25,6 +26,7 @@ public class Employee {
     @Getter
     @Setter
     @Column(name="EMPLOYEE_NAME")
+    @NotEmpty
     private String name;
 
     @Getter

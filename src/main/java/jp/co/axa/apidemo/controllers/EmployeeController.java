@@ -5,6 +5,7 @@ import jp.co.axa.apidemo.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public Employee saveEmployee(Employee employee){
+    public Employee saveEmployee(@Valid Employee employee){
         return employeeService.saveEmployee(employee);
     }
 
