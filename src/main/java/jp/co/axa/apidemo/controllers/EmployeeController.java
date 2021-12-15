@@ -3,6 +3,8 @@ package jp.co.axa.apidemo.controllers;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -27,7 +29,13 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public Employee saveEmployee(@Valid Employee employee){
+    public Employee saveEmployee(@Valid @RequestBody Employee employee, BindingResult bindingResult) throws BindException {
+        if (employee.getId() != null) {
+            bindingResult.rejectValue("id", "required.empty");
+        }
+        if (bindingResult.hasErrors()) {
+            throw new BindException(bindingResult);
+        }
         return employeeService.saveEmployee(employee);
     }
 
