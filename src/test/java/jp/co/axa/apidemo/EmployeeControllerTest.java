@@ -2,6 +2,7 @@ package jp.co.axa.apidemo;
 
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -74,15 +75,42 @@ public class EmployeeControllerTest {
     }
 
     @Test
-    public void testSaveEmployee() throws Exception {
+    public void testSaveEmployeeSuccess() throws Exception {
         Employee foo = new Employee("Foo", 1, "it");
         foo.setId(888l);
         when(employeeRepository.save(any(Employee.class))).thenReturn(foo);
         this.mockMvc.perform(post("/api/v1/employees")
                         .content("{\"name\": \"Foo\", \"salary\":1, \"department\":\"it\"}")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(foo.getId()))
+                ;
+    }
+
+    @Test
+    public void testSaveEmployeeWithSpecifiedId() throws Exception {
+        this.mockMvc.perform(post("/api/v1/employees")
+                        .content("{\"name\": \"Foo\", \"salary\":1, \"department\":\"it\", \"id\": 123}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation error(s)"))
+                .andExpect(jsonPath("$.errors").isArray())
+                .andExpect(jsonPath("$.errors.[0]").value(CoreMatchers.containsString("must not be specified")))
+                ;
+    }
+
+    @Test
+    public void testSaveEmployeeWithTwoConstraintBroken() throws Exception {
+        this.mockMvc.perform(post("/api/v1/employees")
+                        .content("{\"name\": \"\", \"salary\":1, \"department\":\"\"}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").isArray())
+                .andExpect(jsonPath("$.errors").value(CoreMatchers.everyItem(CoreMatchers.endsWith("not be empty"))))
                 ;
     }
 }
