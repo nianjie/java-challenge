@@ -4,12 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 @ToString
@@ -32,11 +28,13 @@ public class Employee {
     @Getter
     @Setter
     @Column(name="EMPLOYEE_SALARY")
+    @Min(0)
     private Integer salary;
 
     @Getter
     @Setter
     @Column(name="DEPARTMENT")
+    @NotEmpty
     private String department;
 
     public Employee() {
