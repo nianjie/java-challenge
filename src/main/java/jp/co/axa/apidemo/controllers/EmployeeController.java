@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -42,8 +43,10 @@ public class EmployeeController {
 
     @DeleteMapping("/employees/{employeeId}")
     public void deleteEmployee(@PathVariable(name="employeeId")Long employeeId){
+        if (!employeeService.existsById(employeeId)) {
+            throw new NoSuchElementException(String.format("The employee{id=%d} does not exist.", employeeId));
+        }
         employeeService.deleteEmployee(employeeId);
-        System.out.println("Employee Deleted Successfully");
     }
 
     @PutMapping("/employees/{employeeId}")

@@ -70,6 +70,7 @@ public class EmployeeControllerTest {
         when(employeeRepository.findById(1l)).thenReturn(Optional.empty());
         this.mockMvc.perform(get("/api/v1/employees/1"))
                 .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(CoreMatchers.containsString("does not exist")))
                 ;
     }
 
@@ -118,12 +119,24 @@ public class EmployeeControllerTest {
 
     @Test
     public void testDeleteEmployee() throws Exception {
+        when(employeeRepository.existsById(1l)).thenReturn(true);
         this.mockMvc.perform(delete("/api/v1/employees/1")
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 ;
         verify(employeeRepository).deleteById(1l);
+    }
+
+    @Test
+    public void testDeleteEmployeeNotExist() throws Exception {
+        this.mockMvc.perform(delete("/api/v1/employees/1")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value(CoreMatchers.containsString("does not exist")))
+        ;
+        verify(employeeRepository, never()).deleteById(any());
     }
 
     @Test
