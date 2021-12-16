@@ -16,9 +16,8 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -86,6 +85,7 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(foo.getId()))
                 ;
+        verify(employeeRepository).save(any());
     }
 
     @Test
@@ -99,18 +99,87 @@ public class EmployeeControllerTest {
                 .andExpect(jsonPath("$.errors").isArray())
                 .andExpect(jsonPath("$.errors.[0]").value(CoreMatchers.containsString("must not be specified")))
                 ;
+        verify(employeeRepository, never()).save(any());
     }
 
     @Test
-    public void testSaveEmployeeWithTwoConstraintBroken() throws Exception {
+    public void testSaveEmployeeWithJavaBeanValidationBroken() throws Exception {
         this.mockMvc.perform(post("/api/v1/employees")
-                        .content("{\"name\": \"\", \"salary\":1, \"department\":\"\"}")
+                        .content("{\"name\": \"\", \"salary\":-1, \"department\":\"\"}")
                         .accept(MediaType.APPLICATION_JSON_VALUE)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors").isArray())
-                .andExpect(jsonPath("$.errors").value(CoreMatchers.everyItem(CoreMatchers.endsWith("not be empty"))))
+                .andExpect(jsonPath("$.errors").value(CoreMatchers.hasItem(CoreMatchers.endsWith("must not be empty"))))
+                .andExpect(jsonPath("$.errors").value(CoreMatchers.hasItem(CoreMatchers.endsWith("must be greater than or equal to 0"))))
                 ;
+        verify(employeeRepository, never()).save(any());
+    }
+
+    @Test
+    public void testDeleteEmployee() throws Exception {
+        this.mockMvc.perform(delete("/api/v1/employees/1")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                ;
+        verify(employeeRepository).deleteById(1l);
+    }
+
+    @Test
+    public void testUpdateEmployeeSuccess() throws Exception {
+        Employee foo = new Employee("Foo", 1, "it");
+        foo.setId(888l);
+        when(employeeRepository.existsById(foo.getId())).thenReturn(true);
+        this.mockMvc.perform(put("/api/v1/employees/888")
+                        .content("{\"id\":888, \"name\": \"Bar\", \"salary\":1000, \"department\":\"hr\"}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                ;
+        foo.setDepartment("hr");
+        foo.setName("Bar");
+        foo.setSalary(1000);
+        verify(employeeRepository).save(foo);
+    }
+
+    @Test
+    public void testUpdateEmployeeWithNullId() throws Exception {
+        Employee foo = new Employee("Foo", 1, "it");
+        foo.setId(888l);
+        when(employeeRepository.existsById(foo.getId())).thenReturn(true);
+        this.mockMvc.perform(put("/api/v1/employees/888")
+                        .content("{\"id\":null, \"name\": \"Bar\", \"salary\":1000, \"department\":\"hr\"}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.[0]").value(CoreMatchers.containsString("must not be null")))
+        ;
+        verify(employeeRepository, never()).save(any());
+    }
+
+    @Test
+    public void testUpdateEmployeeWithInconsistentIds() throws Exception {
+        this.mockMvc.perform(put("/api/v1/employees/888")
+                        .content("{\"id\":777, \"name\": \"Bar\", \"salary\":1000, \"department\":\"hr\"}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.[0]").value(CoreMatchers.containsString("must be consistent")))
+                ;
+        verify(employeeRepository, never()).save(any());
+    }
+
+    @Test
+    public void testUpdateEmployeeWithJavaBeanValidationBroken() throws Exception {
+        this.mockMvc.perform(put("/api/v1/employees/888")
+                        .content("{\"id\":888, \"name\": \"\", \"salary\":-1000, \"department\":\"\"}")
+                        .accept(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").value(CoreMatchers.hasItem(CoreMatchers.containsString("must not be empty"))))
+                .andExpect(jsonPath("$.errors").value(CoreMatchers.hasItem(CoreMatchers.containsString("must be greater than or equal to 0"))))
+        ;
+        verify(employeeRepository, never()).save(any());
     }
 }
