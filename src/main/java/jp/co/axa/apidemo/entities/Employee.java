@@ -1,5 +1,6 @@
 package jp.co.axa.apidemo.entities;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 @ToString
+@EqualsAndHashCode
 @Entity
 @Table(name="EMPLOYEE")
 public class Employee {

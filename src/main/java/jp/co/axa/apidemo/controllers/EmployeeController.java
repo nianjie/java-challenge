@@ -5,6 +5,7 @@ import jp.co.axa.apidemo.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -31,7 +32,7 @@ public class EmployeeController {
     @PostMapping("/employees")
     public Employee saveEmployee(@Valid @RequestBody Employee employee, BindingResult bindingResult) throws BindException {
         if (employee.getId() != null) {
-            bindingResult.rejectValue("id", "required.empty");
+            bindingResult.rejectValue("id", "MustBeEmpty");
         }
         if (bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
@@ -46,13 +47,19 @@ public class EmployeeController {
     }
 
     @PutMapping("/employees/{employeeId}")
-    public void updateEmployee(@RequestBody Employee employee,
-                               @PathVariable(name="employeeId")Long employeeId){
-        Employee emp = employeeService.getEmployee(employeeId);
-        if(emp != null){
+    public void updateEmployee(@RequestBody @Valid Employee employee,
+                               BindingResult bindingResult,
+                               @PathVariable(name="employeeId")Long employeeId) throws BindException {
+        ValidationUtils.rejectIfEmpty(bindingResult, "id", "MustNotNull");
+        if (employee.getId() != null && !employee.getId().equals(employeeId)) {
+            bindingResult.rejectValue("id", "MustBeConsistent");
+        }
+        if (bindingResult.hasErrors()) {
+            throw new BindException(bindingResult);
+        }
+        if (employeeService.existsById(employeeId)) {
             employeeService.updateEmployee(employee);
         }
-
     }
 
 }
