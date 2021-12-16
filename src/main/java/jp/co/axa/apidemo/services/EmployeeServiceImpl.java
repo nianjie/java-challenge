@@ -38,4 +38,9 @@ public class EmployeeServiceImpl implements EmployeeService{
     public void updateEmployee(Employee employee) {
         employeeRepository.save(employee);
     }
+
+    @Override
+    public boolean existsById(Long employeeId) {
+        return employeeRepository.existsById(employeeId);
+    }
 }
