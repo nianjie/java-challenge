@@ -37,13 +37,6 @@ public class ApiDemoExceptionAdvice extends ResponseEntityExceptionHandler {
     @Autowired
     HttpServletRequest request;
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Object> handleNSE(NoSuchElementException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(LocalDateTime.now(), ex.getMessage(), Collections.emptyList()));
-    }
-
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         return ResponseEntity
@@ -54,6 +47,13 @@ public class ApiDemoExceptionAdvice extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         return handleBE(ex, this.request, status);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<Object> handleNSE(NoSuchElementException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(LocalDateTime.now(), ex.getMessage(), Collections.emptyList()));
     }
 
     private ResponseEntity<Object> handleBE(BindException ex, HttpServletRequest req, HttpStatus status) {
