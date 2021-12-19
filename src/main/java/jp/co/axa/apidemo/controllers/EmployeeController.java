@@ -12,6 +12,16 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+/**
+ * A controller provides REST service relating to {@link Employee}.
+ * <p><ul>Following methods are supported:
+ *   <li>/employees GET</li>
+ *   <li>/employees/{id} GET</li>
+ *   <li>/employees POST</li>
+ *   <li>/employees/{id} DELETE</li>
+ *   <li>/employees/{id} PUT</li>
+ * </ul></p>
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class EmployeeController {
@@ -19,17 +29,37 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    /**
+     * Get a list of employees available in the system.
+     * @return List
+     */
     @GetMapping("/employees")
     public List<Employee> getEmployees() {
         List<Employee> employees = employeeService.retrieveEmployees();
         return employees;
     }
 
+    /**
+     * Get an employee which id is specified from URI path.
+     * <p>If the specified employee not exist, an error will be responded.</p>
+     * @param employeeId
+     * @return Employee
+     */
     @GetMapping("/employees/{employeeId}")
     public Employee getEmployee(@PathVariable(name="employeeId")Long employeeId) {
         return employeeService.getEmployee(employeeId);
     }
 
+    /**
+     * Create a new employee with information specified from client.
+     * Before creation following validations are performed,  if failed detail message as response is returned.
+     * <p>employee.id is empty and
+     * <p>constraints declared within {@link Employee} definition.
+     * @param employee
+     * @param bindingResult
+     * @return Employee
+     * @throws BindException
+     */
     @PostMapping("/employees")
     public Employee saveEmployee(@Valid @RequestBody Employee employee, BindingResult bindingResult) throws BindException {
         if (employee.getId() != null) {
@@ -41,6 +71,11 @@ public class EmployeeController {
         return employeeService.saveEmployee(employee);
     }
 
+    /**
+     * Delete an employee which id is specified from URI path.
+     * <p>If the specified employee not exist, it will respond with an error.</p>
+     * @param employeeId
+     */
     @DeleteMapping("/employees/{employeeId}")
     public void deleteEmployee(@PathVariable(name="employeeId")Long employeeId){
         if (!employeeService.existsById(employeeId)) {
@@ -49,6 +84,15 @@ public class EmployeeController {
         employeeService.deleteEmployee(employeeId);
     }
 
+    /**
+     * Update an employee which id as one segment is specified from URI path.
+     * <p>Besides constraints declared within {@link Employee}, it also is not valid if the id included in the request body
+     * differs the id in URI path.</p>
+     * @param employee
+     * @param bindingResult
+     * @param employeeId
+     * @throws BindException
+     */
     @PutMapping("/employees/{employeeId}")
     public void updateEmployee(@RequestBody @Valid Employee employee,
                                BindingResult bindingResult,
