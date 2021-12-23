@@ -43,10 +43,13 @@ Application (with the embedded H2 database) is ready to be used ! You can access
 - Is the application running as expected
 - No performance issues
 
-#### Your experience in Java
+#### My experience in Java
 
-Please let us know more about your Java experience in a few sentences. For example:
+- I have 15+ years experience in Java.
+- I started to use Spring Boot from 2019, 
+  and before that I had used other DI container which experience made my switch to Spring Boot easier.
 
-- I have 3 years experience in Java and I started to use Spring Boot from last year
-- I'm a beginner and just recently learned Spring Boot
-- I know Spring Boot very well and have been using it for many years
+#### What I want to do if having more time
+- upgrade /api/v1 to /api/v2 with Spring HATEOAS to provide a RESTful service.
+- add security to protect service.
+- containerize, and adapt a microservice architecture. 
